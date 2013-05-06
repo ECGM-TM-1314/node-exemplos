@@ -1,0 +1,16 @@
+{
+  "name": "node-example-pm",
+  "version": "0.0.1-2",
+  "dependencies": {
+    "socket.io": "~0.9.6",
+    "util": "0.4.9"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  },
+  "subdomain": "pmoreira-ws2",
+  "scripts": {
+    "start": "ws_visual_track.js"
+  }
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+  <head>
+    <title>Visualmente Chato</title>
+	<link rel="stylesheet" href="/css/css1.css"/>
+    <script type="text/javascript" src="/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/jquery/jquery.mobile.min.js"></script>
+
+<!-- to prevent iOS devices to zoom on double tap -->
+<meta
+    name="viewport"
+    content="initial-scale=1.0;
+    maximum-scale=1.0;
+    user-scalable=no;
+    width=device-width"
+>
+
+	<!-- importante: a raiz é a raiz da pasta onde esta a coorer o servidor de node.js -->
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+
+	  const W = 20;
+	  const H = 20;
+	
+	  const sW = '20px';
+	  const sH = '20px';
+	
+	  var myColor;
+	  var myX;
+	  var myY;
+	  var myID;
+	
+      $(document).ready(function() {
+		
+		// socket object : tries to connect (send a connect message 'connection')
+		var socket = io.connect();
+        console.log('connecting...');
+
+		// callback quando conectado
+        socket.on('connect', function() {
+		  socket.emit('login');
+        });
+
+        // to support mobile devices
+
+        // to prevent default beahvior on touchmove events
+        // for instance scroll and bounce on safari mobile
+    	document.ontouchmove = function(event){
+    		event.preventDefault();
+		}
+		
+		// use of virtual mouse events (jQuery Mobile) to map touch to equivalent touch events
+		$(document).on("vmousemove",function(event) {
+			myX = event.pageX - W/2;;
+			myY = event.pageY - H/2;
+			//debugger;	
+			if (myID) {
+				me = $(myID);
+				me.css('top',myY);
+				me.css('left',myX);
+				socket.emit('move',{"x":myX, "y":myY, "color":myColor, "id":myID});
+			}
+			
+		});	
+
+		$(document).on("vclick",function(event) {
+			var x = event.pageX;
+			var y = event.pageY;
+			var message = {"x":x,"y":y,"color":myColor};
+			socket.emit('clique',message);
+		});
+/*
+		$(document).mousemove(function(event) {
+			myY = event.pageX - W/2;;
+			myY = event.pageY - H/2;
+			//debugger;	
+			if (myID) {
+				me = $(myID);
+				me.css('top',myY);
+				me.css('left',myY);
+				socket.emit('move',{"x":myY, "y":myY, "color":myColor, "id":myID});
+			}
+			
+		});
+		$(document).click(function(event) {
+			var x= event.pageX;
+			var y= event.pageY;
+			var message = {"x":x,"y":y,"color":myColor};
+			socket.emit('clique',message);
+		});
+        
+
+*/
+		
+		socket.on('count', function(data) {
+			$("#count").text(data.count);
+		});
+		
+		socket.on('logged', function(data) {
+			myColor = data.color;
+			myID = data.id;
+			createDiv(myX-W/2,myY-H/2,myColor,myID);
+		});
+		
+		socket.on('clique', function(data) {			
+			createDiv(data.x,data.y,data.color);
+			});
+			
+		socket.on('move', function(data){
+			//debugger;
+			othersel = "#"+data.id;
+			other = $(othersel);
+			if (other.length == 0) {
+				createDiv(data.x,data.y,data.color,data.id);
+			} else {
+				other.css('top',data.y);
+				other.css('left',data.x);
+			}	
+		})	
+      });
+
+	function createDiv(x,y,color,id) {
+		xx = x - W/2;
+		yy = y - H/2;
+		newDiv = $("<div>");
+		if(id) newDiv.attr('id',id);
+		newDiv.css('background-color',color);
+		newDiv.css('position','absolute');
+		newDiv.css('width',sW);
+		newDiv.css('height',sH);
+		newDiv.css('left',xx);
+		newDiv.css('top',yy);
+		$('body').append(newDiv);
+	}
+    </script>
+    
+    </style>
+  </head>
+  <body>
+		<div id="count">0</div>
+  </body>
+</html>
