@@ -1,0 +1,1 @@
+Nota: os modúlos necessários ao node.js não estão aqui depositados
