@@ -1,0 +1,61 @@
+<html>
+	<head>
+		<title>Contador de Clientes, com ID</title>
+			<link rel="stylesheet" href="/clientCounter.css"/>
+    		<script type="text/javascript" src="/jquery/jquery.min.js"></script>
+    		<script type="text/javascript" src="/jquery/jquery.mobile.min.js"></script>
+			<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+			<script>
+		
+			
+ 		$(document).ready(function() {
+ 			var myID=-1;
+ 
+		
+			// socket object : tries to connect
+			// the default connect sends a message 'connection'
+			var socket = io.connect();
+			
+        	console.log('connecting...');
+			
+			// when a socket successfully connects to a server
+			// it receives a connect message ackkowledging the
+			// connection
+			socket.on("connect", function (data) {
+				$("#log").append("connection established");			
+				$(document).click(clickHandler);
+			});
+			
+			socket.on('count', function(data) {
+				$("#ncc").html(data.count);
+					});
+
+			socket.on('logged', function(data) {
+				console.log("have an id");
+				//myColor = data.color;
+				myID = data.id;
+				$("#myid").html(myID);
+					});
+					
+			socket.on("click", function(data) {
+				$("#log").append(data.id + " clicou em x:"+data.x+" y:"+data.y+"<br/>");
+			});
+			
+			function clickHandler(event) {
+				myX = event.pageX;
+				myY = event.pageY;
+				socket.emit('click',{"id":myID, "x":myX, "y": myY});
+			}
+		});
+			</script>
+	</head>
+	<body>
+		<div id="count">
+			<h2>i have an id : <span id="myid"></span></h2>
+			<h2>number of connections : <span id="ncc"></span></h2>
+		</div>
+		<div id=log>
+			
+		</div>
+	</body>
+</html>

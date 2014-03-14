@@ -1,10 +1,12 @@
 var http = require('http'),			//  http server
     fs   = require('fs'),			//  filesystem API
     io   = require('socket.io'),	//  web sockets (and more)
-	path = require('path');			//  fs path utilities (e.g. get extension from file path)
+	path = require('path'),			//  fs path utilities (e.g. get extension from file path)
+	static = require('node-static');//  http server for static content
 
-// array that has the colos to assign to each client
-// can be increased or make the colors to be created by a procedure
+// array that has the colors to assign to each client
+// can be increased or make colors to be created by a procedure
+
 var colors = new Array();
 
 colors[0]='#FFAAAA'; //pink
@@ -16,11 +18,9 @@ colors[5]='#FFAAFF'; //light magenta
 colors[6]='#FFD700'; //gold
 colors[7]='#FF4500'; //orange red
 colors[8]='#DDA0DD'; //plum
-colors[9]='#ADFF2F'; //green yellow
-
+colors[9]='#ADFF2F'; //green yellowi
 
 ncolors = colors.length;
-
 
 // the initial id
 var id = 0;
@@ -28,80 +28,29 @@ var id = 0;
 // the initial color index
 var colorIndex = id % ncolors;
 
-// a little bit more flexible server
-// capable to serve common static content as .js files (javacript)
-// and .css (stylesheets)
-
+// to manage connected clients
 var connectedClients = new Array();
 
+// new fileserver for static content
+// static content is at the currente directory
+var fileServer = new static.Server('./static');
 
-var server = http.createServer(function (request, response) {
-	
-	console.log(request);
- 
-//    console.log('request starting...');
-    
-	// if no filepath, serves cvisual_track.html by default
-    var filePath = '.' + request.url;
-    if (filePath == './')
-        filePath = './cvisual_track.html';
-    
- 	// get file extension
-    var extname = path.extname(filePath);
-	//console.log(extname);
-	// adds a proper mime-type to the response header
-    switch (extname) {
-        case '.css':
-            contentType = 'text/css';
-            break;
-		case '.js':
-            contentType = 'application/javascript';
-            break;
-		default:
-			contentType = 'text/html';
-			break;
-    	}
-
-//	console.log(contentType);
-     
-	// check if requested file exists
-    fs.exists(filePath, function(exists) {
-     	// if exists, serve it with proper mime.type
-		// else send the proper status code
-        if (exists) {
-            fs.readFile(filePath, function(error, content) {
-                if (error) {
-		            response.writeHead(500);
-                    response.end();
-                }
-                else {
-					response.writeHead(200, {"Content-Type": contentType});
-					response.end(content, 'utf-8');
-                }
-            });
-        }
-        else {
-            response.writeHead(404);
-            response.end();
-        }
-    });
-     
-});
-
-/*
-var server = http.createServer(function(request, response) {
-  response.writeHead(200, {
-    'Content-Type': 'text/html'
-  });
-  
-  var rs = fs.createReadStream(__dirname + '/cvisual.html');
-  sys.pump(rs, response);
-});
-*/
+// server for io
+var server = http.createServer(handler);
+function handler(request, response) {
+	    request.addListener('end', function () {
+			// if no filepath, serves cvisual.html by default
+		    
+	        fileServer.serve(request, response, function (e, res) {
+				var filePath = '.' + request.url;
+			    if (filePath == './') filePath = 'cvisual_track.html';
+				fileServer.serveFile(filePath, 200, {}, request, response);
+				});
+	    });
+	}
 
 // attach a socketio interface to the server
 var socketio = io.listen(server);
-
 
 socketio.sockets.on('connection', function(client) {
   
@@ -127,7 +76,7 @@ socketio.sockets.on('connection', function(client) {
 	  sid = 'm'+id;
 		
 		// emit() allows to directly send JSON formatted messages (they will be automatically parsed)
-		// send() allows sending strings enconding JSON objects, but they to be parsed it on the receiver.
+		// send() allows sending strings enconding JSON objects, but they need to be parsed it on the receiver.
 		
 		// emit a logged message to the client with id
 		client.emit("logged",{"color":myColor,"id":sid});
@@ -148,8 +97,7 @@ socketio.sockets.on('connection', function(client) {
 // redirects clique data to all clients
   client.on('clique', function (data) {
 	// emit to all
-	socketio.sockets.emit('clique',data);
-	
+	socketio.sockets.emit('clique',data);	
 // alternatively broadcast and emit to self
 //  client.broadcast.emit('clique',message);
 //  client.emit('clique',message);
@@ -158,8 +106,7 @@ socketio.sockets.on('connection', function(client) {
 // redirects move data to all clients
   client.on('move', function (data) {
 	// emit to all
-	socketio.sockets.emit('move',data);
-	
+	socketio.sockets.emit('move',data);	
 // alternatively broadcast and emit to self
 //  client.broadcast.emit('move',message);
 //  client.emit('move',message);

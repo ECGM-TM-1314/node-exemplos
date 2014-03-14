@@ -1,0 +1,27 @@
+<html>
+	<head>
+		<title>Contador de Clientes</title>
+			<link rel="stylesheet" href="/clientCounter.css"/>
+    		<script type="text/javascript" src="/jquery/jquery.min.js"></script>
+    		<script type="text/javascript" src="/jquery/jquery.mobile.min.js"></script>
+			<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+			<script>
+			
+ 		$(document).ready(function() {
+		
+			// socket object : tries to connect
+			// the default connect sends a message 'connection'
+			var socket = io.connect();
+        	console.log('connecting...');
+			socket.on('count', function(data) {
+				$("#ncc").html(data.count);
+					});
+				});
+			</script>
+	</head>
+	<body>
+		<div id="count">
+			<h2>number of connections : <span id="ncc"></span></h2>
+		</div>
+	</body>
+</html>
