@@ -47,6 +47,7 @@ function handler(request, response) {
 				fileServer.serveFile(filePath, 200, {}, request, response);
 				});
 	    });
+	    request.resume();
 	}
 
 // attach a socketio interface to the server

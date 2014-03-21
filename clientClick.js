@@ -1,8 +1,8 @@
 /**
- * "Client Counter" node.js
+ * "Client Click" node.js
  * 
  * @author Pedro Moreira <pmoreira@estg.ipvc.pt> 2014.03.04
- * @version 0.1
+ * @version 0.2 | 2014.03.19
  * 
  */
 
@@ -38,6 +38,7 @@ function handler(request, response) {
                 fileServer.serveFile(filePath, httpcode, {}, request, response);
 				});
 	    });
+	    request.resume();
 }
 
 // to manage connected clients

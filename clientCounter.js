@@ -38,6 +38,7 @@ function handler(request, response) {
                 fileServer.serveFile(filePath, httpcode, {}, request, response);
 				});
 	    });
+	    request.resume();
 }
 
 // to manage connected clients

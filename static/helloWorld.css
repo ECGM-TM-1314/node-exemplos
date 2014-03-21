@@ -1,3 +1,6 @@
-body {
-	background-color: #adc0d0;	
+body.ok {
+	background-color: #a0f0a0;	
+}
+body.ko {
+	background-color: #f0a0a0;	
 }
